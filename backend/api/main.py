@@ -1,3 +1,4 @@
+
 import json
 import os
 from fastapi import (
@@ -210,7 +211,6 @@ def delete_document(
     return {"message": "Document deleted successfully"}
 
 
-
 @app.post("/documents/upload")
 async def upload_document(
     file: UploadFile = File(...),
@@ -249,17 +249,25 @@ def query_documents(
         department=request.department,
     )
 
-    sources = [
-        {
-            "document_title": chunk["document_title"],
-            "document_id": chunk["document_id"],
-            "department": chunk.get("department"),
-            "page_number": chunk["page_number"],
-            "chunk_id": chunk["chunk_id"],
-            "similarity": round(chunk["similarity"], 4),
-        }
-        for chunk in chunks
-    ]
+    # Remove duplicate sources from the same document and page
+    seen_sources = set()
+    unique_sources = []
+
+    for chunk in chunks:
+        source_key = (chunk["document_title"], chunk["page_number"])
+
+        if source_key not in seen_sources:
+            seen_sources.add(source_key)
+            unique_sources.append({
+                "document_title": chunk["document_title"],
+                "document_id": chunk["document_id"],
+                "department": chunk.get("department"),
+                "page_number": chunk["page_number"],
+                "chunk_id": chunk["chunk_id"],
+                "similarity": round(chunk["similarity"], 4),
+            })
+
+    sources = unique_sources
 
     if not chunks:
         answer = NOT_AVAILABLE_MESSAGE
