@@ -15,6 +15,9 @@ def search_similar_chunks(
     department: Optional[str] = None,
 ) -> list[dict]:
     """Search pgvector for document chunks matching the query."""
+    if db.bind and db.bind.dialect.name != "postgresql":
+        return []
+
     query_embedding = generate_embedding(query, task_type="RETRIEVAL_QUERY")
 
     distance_expression = DocumentChunk.embedding.cosine_distance(query_embedding)

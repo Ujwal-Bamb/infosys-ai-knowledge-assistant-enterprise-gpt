@@ -13,5 +13,7 @@ class DocumentResponse(BaseModel):
     document_type: Optional[str] = None
     access_scope: str = "all_users"
     uploaded_at: datetime
+    page_count: int = 1
+    chunk_count: int = 0
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)

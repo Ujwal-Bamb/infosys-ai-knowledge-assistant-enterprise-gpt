@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, UserRole } from "@/types";
-import { adminUser, initialUser } from "@/data/mockData";
 import { api, getToken, removeToken, setToken } from "@/lib/api";
 
 interface AuthContextType {
@@ -11,103 +10,76 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isEmployee: boolean;
-  isEmployer: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (fullName: string, email: string, password: string) => Promise<void>;
   logout: () => void;
-  switchRole: (newRole: UserRole) => void;
   setUserProfile: (updater: (prev: User) => User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(initialUser);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Validate existing JWT token against backend on application mount
   useEffect(() => {
-    // Check if user has an override or active token in localStorage
-    const savedUser = localStorage.getItem("infosys_user_profile");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        setUser(initialUser);
+    async function restoreSession() {
+      const token = getToken();
+      if (!token) {
+        setIsLoading(false);
+        return;
       }
-    } else {
-      setUser(initialUser);
+
+      try {
+        const me = await api.getMe();
+        const authenticatedUser: User = {
+          id: me.id,
+          full_name: me.full_name,
+          email: me.email,
+          role: (me.role as UserRole) || "Employee",
+          member_since: "Oct 2026",
+        };
+        setUser(authenticatedUser);
+        localStorage.setItem("infosys_user_profile", JSON.stringify(authenticatedUser));
+      } catch (err) {
+        // Token is expired, invalid, or server is unreachable
+        console.warn("Session restore failed, clearing token:", err);
+        removeToken();
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
     }
-    setIsLoading(false);
+
+    restoreSession();
   }, []);
 
   const login = async (email: string, password: string) => {
-    try {
-      // Attempt backend login first
-      const data = await api.login({ email, password });
-      setToken(data.access_token);
-      const newUser: User = {
-        id: data.user.id,
-        full_name: data.user.full_name,
-        email: data.user.email,
-        role: (data.user.role as UserRole) || "Employee",
-        member_since: "Oct 2026",
-      };
-      setUser(newUser);
-      localStorage.setItem("infosys_user_profile", JSON.stringify(newUser));
-    } catch (error) {
-      console.warn("Backend auth failed or offline, falling back to simulated session:", error);
-      // Demo fallback: if email has admin, login as Admin, else Employee
-      const fallbackUser: User = email.toLowerCase().includes("admin")
-        ? { ...adminUser, email }
-        : { ...initialUser, email, full_name: email.split("@")[0] || "John Doe" };
-      setToken("mock-jwt-token-infosys");
-      setUser(fallbackUser);
-      localStorage.setItem("infosys_user_profile", JSON.stringify(fallbackUser));
-    }
+    // Authenticate exclusively through real FastAPI backend
+    const data = await api.login({ email, password });
+
+    setToken(data.access_token);
+    const authenticatedUser: User = {
+      id: data.user.id,
+      full_name: data.user.full_name,
+      email: data.user.email,
+      role: (data.user.role as UserRole) || "Employee",
+      member_since: "Oct 2026",
+    };
+    setUser(authenticatedUser);
+    localStorage.setItem("infosys_user_profile", JSON.stringify(authenticatedUser));
   };
 
   const register = async (fullName: string, email: string, password: string) => {
-    try {
-      const data = await api.register({ full_name: fullName, email, password });
-      const newUser: User = {
-        id: data.user_id,
-        full_name: data.full_name,
-        email: data.email,
-        role: "Employee",
-        member_since: "Oct 2026",
-      };
-      setUser(newUser);
-      setToken("mock-jwt-token-infosys");
-      localStorage.setItem("infosys_user_profile", JSON.stringify(newUser));
-    } catch (error) {
-      console.warn("Backend registration failed, saving locally:", error);
-      const newUser: User = {
-        id: Date.now(),
-        full_name: fullName,
-        email,
-        role: "Employee",
-        member_since: "Oct 2026",
-      };
-      setUser(newUser);
-      localStorage.setItem("infosys_user_profile", JSON.stringify(newUser));
-    }
+    // Public registration exclusively through real FastAPI backend (Employee role only)
+    await api.register({ full_name: fullName, email, password });
   };
 
   const logout = () => {
     removeToken();
-    localStorage.removeItem("infosys_user_profile");
     setUser(null);
-  };
-
-  const switchRole = (newRole: UserRole) => {
-    if (!user) return;
-    const updated: User = {
-      ...user,
-      role: newRole,
-      full_name: newRole === "Admin" ? "Admin User" : newRole === "Employer" ? "Employer Manager" : "John Doe",
-    };
-    setUser(updated);
-    localStorage.setItem("infosys_user_profile", JSON.stringify(updated));
   };
 
   const setUserProfile = (updater: (prev: User) => User) => {
@@ -117,10 +89,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("infosys_user_profile", JSON.stringify(updated));
   };
 
-  const role = user?.role || "Employee";
+  const role: UserRole = user?.role || "Employee";
   const isAdmin = role === "Admin";
   const isEmployee = role === "Employee";
-  const isEmployer = role === "Employer";
 
   return (
     <AuthContext.Provider
@@ -130,11 +101,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user,
         isAdmin,
         isEmployee,
-        isEmployer,
+        isLoading,
         login,
         register,
         logout,
-        switchRole,
         setUserProfile,
       }}
     >

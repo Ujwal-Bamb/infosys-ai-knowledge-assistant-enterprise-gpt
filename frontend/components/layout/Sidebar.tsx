@@ -10,15 +10,14 @@ import {
   UploadCloud,
   History,
   User as UserIcon,
-  Sparkles,
-  ShieldAlert,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { role, isAdmin, switchRole } = useAuth();
+  const { role, isAdmin } = useAuth();
 
   const navigationItems = [
     {
@@ -37,7 +36,7 @@ export function Sidebar() {
       name: "Document Management",
       href: "/documents",
       icon: FileText,
-      adminOnly: true,
+      adminOnly: false,
     },
     {
       name: "Upload Document",
@@ -118,47 +117,29 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* Role Switcher & System Badge */}
+      {/* Verified Role Badge (Read-only) */}
       <div className="p-4 m-3 rounded-xl bg-[#071224] border border-[#132742]">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
-            <Sparkles className="w-3.5 h-3.5 text-[#60A5FA]" />
-            <span>Active Role</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-[#60A5FA]" />
+            <span>Assigned Role</span>
           </div>
           <span
             className={cn(
               "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full",
-              role === "Admin"
+              isAdmin
                 ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
-                : role === "Employer"
-                ? "bg-purple-400/20 text-purple-300 border border-purple-400/30"
                 : "bg-blue-400/20 text-blue-300 border border-blue-400/30"
             )}
           >
             {role}
           </span>
         </div>
-
-        <p className="text-[11px] text-slate-400 mb-2.5">
-          Switch view to test role-based permissions:
+        <p className="text-[11px] text-slate-400 mt-2">
+          {isAdmin
+            ? "Administrative privileges active."
+            : "Employee knowledge access enabled."}
         </p>
-
-        <div className="grid grid-cols-3 gap-1">
-          {(["Admin", "Employee", "Employer"] as const).map((r) => (
-            <button
-              key={r}
-              onClick={() => switchRole(r)}
-              className={cn(
-                "py-1 text-[11px] font-medium rounded transition-all",
-                role === r
-                  ? "bg-[#1E60FF] text-white font-semibold shadow"
-                  : "bg-[#0E213B] text-slate-400 hover:text-white hover:bg-[#132742]"
-              )}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
       </div>
     </aside>
   );

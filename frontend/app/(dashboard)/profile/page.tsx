@@ -16,12 +16,13 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { api } from "@/lib/api";
 
 export default function ProfilePage() {
-  const { user, role, setUserProfile, switchRole } = useAuth();
+  const { user, role, setUserProfile } = useAuth();
 
-  const [fullName, setFullName] = useState(user?.full_name || "John Doe");
-  const [email, setEmail] = useState(user?.email || "john.doe@infosys.com");
+  const [fullName, setFullName] = useState(user?.full_name || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [profileSuccess, setProfileSuccess] = useState(false);
 
   // Change password fields
@@ -33,15 +34,25 @@ export default function ProfilePage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+
+  // Keep state synced with loaded user
+  React.useEffect(() => {
+    if (user?.full_name) setFullName(user.full_name);
+    if (user?.email) setEmail(user.email);
+  }, [user]);
 
   const getInitials = (name?: string) => {
-    if (!name) return "JD";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+    if (!name) return "U";
+    return (
+      name
+        .split(" ")
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "U"
+    );
   };
 
   const handleUpdateProfile = (e: React.FormEvent) => {
@@ -55,12 +66,23 @@ export default function ProfilePage() {
     setTimeout(() => setProfileSuccess(false), 3000);
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError(null);
+    setPasswordSuccess(false);
+
+    if (!currentPassword) {
+      setPasswordError("Current password is required.");
+      return;
+    }
 
     if (newPassword.length < 8) {
       setPasswordError("New password must be at least 8 characters long.");
+      return;
+    }
+
+    if (newPassword === currentPassword) {
+      setPasswordError("New password cannot be the same as current password.");
       return;
     }
 
@@ -69,11 +91,23 @@ export default function ProfilePage() {
       return;
     }
 
-    setPasswordSuccess(true);
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setTimeout(() => setPasswordSuccess(false), 3000);
+    setIsSubmittingPassword(true);
+    try {
+      await api.changePassword({
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+
+      setPasswordSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPasswordSuccess(false), 4000);
+    } catch (err: any) {
+      setPasswordError(err.message || "Failed to update password");
+    } finally {
+      setIsSubmittingPassword(false);
+    }
   };
 
   return (
@@ -99,7 +133,7 @@ export default function ProfilePage() {
           <div className="text-center sm:text-left flex-1">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <h2 className="text-xl font-bold text-slate-900">
-                {user?.full_name || "John Doe"}
+                {user?.full_name || "User"}
               </h2>
               <Badge
                 variant="success"
@@ -108,7 +142,7 @@ export default function ProfilePage() {
                 {role}
               </Badge>
             </div>
-            <p className="text-xs text-slate-400 mt-1">{user?.email}</p>
+            <p className="text-xs text-slate-400 mt-1">{user?.email || "—"}</p>
 
             <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500 justify-center sm:justify-start">
               <span className="flex items-center gap-1.5">
@@ -119,31 +153,9 @@ export default function ProfilePage() {
                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
                 Member Since:{" "}
                 <strong className="text-slate-700">
-                  {user?.member_since || "Oct 15, 2026"}
+                  {user?.member_since || "Active"}
                 </strong>
               </span>
-            </div>
-          </div>
-
-          {/* Quick Role Switcher for reviewers */}
-          <div className="sm:border-l sm:border-slate-100 sm:pl-6 text-center sm:text-left">
-            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Switch Test Role:
-            </p>
-            <div className="flex sm:flex-col gap-1.5">
-              {(["Employee", "Admin", "Employer"] as const).map((r) => (
-                <button
-                  key={r}
-                  onClick={() => switchRole(r)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                    role === r
-                      ? "bg-[#1E60FF] text-white shadow-2xs"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
             </div>
           </div>
         </div>
@@ -155,7 +167,7 @@ export default function ProfilePage() {
               Full Name
             </span>
             <p className="text-sm font-semibold text-slate-800">
-              {user?.full_name || "John Doe"}
+              {user?.full_name || "User"}
             </p>
           </div>
 
@@ -164,7 +176,7 @@ export default function ProfilePage() {
               Email Address
             </span>
             <p className="text-sm font-semibold text-slate-800">
-              {user?.email || "john.doe@infosys.com"}
+              {user?.email || "—"}
             </p>
           </div>
 
@@ -180,7 +192,7 @@ export default function ProfilePage() {
               Member Since
             </span>
             <p className="text-sm font-semibold text-slate-800">
-              {user?.member_since || "Oct 15, 2026"}
+              {user?.member_since || "Active"}
             </p>
           </div>
         </div>
@@ -291,9 +303,10 @@ export default function ProfilePage() {
           <Button
             type="submit"
             size="lg"
-            className="w-full bg-[#1E60FF] hover:bg-[#1551E5] text-white shadow-sm font-semibold mt-2"
+            disabled={isSubmittingPassword}
+            className="w-full bg-[#1E60FF] hover:bg-[#1551E5] text-white shadow-sm font-semibold mt-2 disabled:opacity-60"
           >
-            Change Password
+            {isSubmittingPassword ? "Updating Password..." : "Change Password"}
           </Button>
         </form>
       </div>

@@ -134,3 +134,24 @@ async def save_document(
             file_path.unlink()
 
         raise
+
+
+def delete_document_by_id(doc_id: int, db: Session) -> None:
+    """Delete a document by ID along with its file and cascading chunks."""
+    document = db.query(Document).filter(Document.id == doc_id).first()
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
+    if document.storage_key:
+        file_path = Path(document.storage_key)
+        if file_path.exists():
+            try:
+                file_path.unlink()
+            except OSError:
+                pass
+
+    db.delete(document)
+    db.commit()

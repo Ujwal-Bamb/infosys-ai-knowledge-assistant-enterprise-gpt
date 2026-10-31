@@ -57,3 +57,25 @@ def login_user(user_data: UserLogin, db: Session) -> User:
         raise ValueError("Account is inactive")
 
     return user
+
+
+def change_user_password(
+    user: User,
+    current_password: str,
+    new_password: str,
+    db: Session,
+) -> User:
+    """Update a user's password after verifying the current password."""
+    if not verify_password(current_password, user.hashed_password):
+        raise ValueError("Current password is incorrect")
+
+    if current_password == new_password:
+        raise ValueError("New password cannot be the same as current password")
+
+    if len(new_password.encode("utf-8")) > 72:
+        raise ValueError("Password must not exceed 72 bytes")
+
+    user.hashed_password = hash_password(new_password)
+    db.commit()
+    db.refresh(user)
+    return user

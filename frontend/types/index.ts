@@ -1,4 +1,4 @@
-export type UserRole = "Admin" | "Employee" | "Employer";
+export type UserRole = "Admin" | "Employee";
 
 export interface User {
   id: number;
@@ -29,13 +29,16 @@ export interface ChatMessage {
 
 export interface DocumentItem {
   id: number;
-  document_id: string;
+  document_id?: string;
   title: string;
   filename: string;
-  department: string;
-  pages: number;
+  department?: string;
+  document_type?: string;
+  pages?: number;
+  page_count?: number;
+  chunk_count?: number;
   uploaded_at: string;
-  status: "Active" | "Processing" | "Archived";
+  status?: string;
   uploaded_by?: string;
 }
 

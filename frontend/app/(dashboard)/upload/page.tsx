@@ -18,7 +18,7 @@ import { api } from "@/lib/api";
 
 export default function UploadDocumentPage() {
   const router = useRouter();
-  const { isAdmin, role, switchRole } = useAuth();
+  const { isAdmin, role } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -47,13 +47,10 @@ export default function UploadDocumentPage() {
           <span className="font-semibold text-[#1E60FF]">{role}</span>.
         </p>
 
-        <div className="mt-6 flex justify-center gap-3">
+        <div className="mt-6 flex justify-center">
           <Link href="/">
             <Button variant="secondary">Return to Dashboard</Button>
           </Link>
-          <Button onClick={() => switchRole("Admin")}>
-            Switch to Admin Role (Demo)
-          </Button>
         </div>
       </div>
     );

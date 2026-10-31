@@ -1,22 +1,4 @@
-import { ChatMessage, DocumentItem, RecentQuery, User } from "@/types";
-
-export const initialUser: User = {
-  id: 1,
-  full_name: "John Doe",
-  email: "john.doe@infosys.com",
-  role: "Employee",
-  is_active: true,
-  member_since: "Oct 15, 2026",
-};
-
-export const adminUser: User = {
-  id: 2,
-  full_name: "Admin User",
-  email: "admin@infosys.com",
-  role: "Admin",
-  is_active: true,
-  member_since: "Aug 01, 2026",
-};
+import { ChatMessage, DocumentItem, RecentQuery } from "@/types";
 
 export const suggestedQuestions = [
   "What is the referral reward for employees?",
@@ -38,56 +20,7 @@ export const popularTopics = [
   { name: "Facilities", icon: "HelpCircle", query: "How to request facility or office access?" },
 ];
 
-export const initialChatMessages: ChatMessage[] = [
-  {
-    id: "msg-1",
-    sender: "user",
-    text: "What is the referral reward for employees?",
-    timestamp: "10:30 AM",
-  },
-  {
-    id: "msg-2",
-    sender: "ai",
-    text: `The referral reward for employees depends on the experience band of the referred candidate:
-
-• **Below 5 Years Experience**: INR 10,000
-• **5 to 10 Years Experience**: INR 15,000
-• **10 to 15 Years Experience**: INR 20,000
-• **Above 15 Years Experience**: INR 30,000
-
-The referral bonus is paid after the hired candidate completes 90 days of continuous service.`,
-    timestamp: "10:30 AM",
-    sources: [
-      {
-        document_title: "Infosys HR Policies Master Manual",
-        document_id: "DOC-HR-2026-001",
-        department: "HR",
-        page_number: 3,
-        similarity: 0.7486,
-        content_snippet:
-          "Section 4.2 - Employee Referral Program: Rewarding talent acquisition via employee networks. Bonus tiers: <5 yrs exp: INR 10,000; 5-10 yrs: INR 15,000; 10-15 yrs: INR 20,000; >15 yrs: INR 30,000. Payout schedule requires 90 days retention.",
-      },
-      {
-        document_title: "Compensation & Benefits Handbook",
-        document_id: "DOC-HR-2026-004",
-        department: "HR",
-        page_number: 14,
-        similarity: 0.6821,
-        content_snippet:
-          "Disbursement guidelines for referral and talent incentives through standard payroll cycles.",
-      },
-      {
-        document_title: "Talent Acquisition Guidelines",
-        document_id: "DOC-TA-2026-012",
-        department: "HR",
-        page_number: 7,
-        similarity: 0.6145,
-        content_snippet:
-          "Eligibility criteria: All permanent employees excluding Hiring Managers and HR Talent Acquisition team.",
-      },
-    ],
-  },
-];
+export const initialChatMessages: ChatMessage[] = [];
 
 export const initialDocuments: DocumentItem[] = [
   {
@@ -147,37 +80,4 @@ export const initialDocuments: DocumentItem[] = [
   },
 ];
 
-export const initialRecentQueries: RecentQuery[] = [
-  {
-    id: "rq-1",
-    question: "What is the referral reward for employees?",
-    timestamp: "Today at 10:30 AM",
-    answer_preview: "The referral reward ranges from INR 10,000 to INR 30,000 based on candidate experience band...",
-    source_document: "Infosys HR Policies Master Manual",
-    department: "HR",
-  },
-  {
-    id: "rq-2",
-    question: "What is the annual sick leave entitlement?",
-    timestamp: "Yesterday at 4:15 PM",
-    answer_preview: "Employees are eligible for 12 days of paid sick leave annually, credited at the start of January...",
-    source_document: "Infosys HR Policies Master Manual",
-    department: "HR",
-  },
-  {
-    id: "rq-3",
-    question: "How do I request access to internal Git repositories?",
-    timestamp: "Oct 29, 2026 at 2:00 PM",
-    answer_preview: "Repository permissions are requested through the IT Service Portal under 'Developer Access Request'...",
-    source_document: "Security and Access Policy",
-    department: "IT",
-  },
-  {
-    id: "rq-4",
-    question: "What is the maximum reimbursement for domestic meal per diem?",
-    timestamp: "Oct 27, 2026 at 11:45 AM",
-    answer_preview: "Tier-1 cities qualify for up to INR 1,500 daily per diem on authorized business travel without receipt itemization...",
-    source_document: "Travel and Expense Policy",
-    department: "Finance",
-  },
-];
+export const initialRecentQueries: RecentQuery[] = [];

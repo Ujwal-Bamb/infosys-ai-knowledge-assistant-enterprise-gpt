@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/Button";
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [email, setEmail] = useState("john.doe@infosys.com");
-  const [password, setPassword] = useState("Password123!");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -30,11 +30,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickFill = (roleEmail: string) => {
-    setEmail(roleEmail);
-    setPassword("Password123!");
   };
 
   return (
@@ -75,36 +70,6 @@ export default function LoginPage() {
             Your intelligent assistant for company policies, internal processes,
             and organizational documentation with grounded, source-cited responses.
           </p>
-
-          {/* Quick Demo Credentials */}
-          <div className="pt-6 border-t border-white/15">
-            <p className="text-xs text-blue-200 mb-2 font-semibold uppercase tracking-wider">
-              Quick Test Sign In:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickFill("admin@infosys.com")}
-                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-colors border border-white/10"
-              >
-                Sign in as Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill("john.doe@infosys.com")}
-                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-colors border border-white/10"
-              >
-                Sign in as Employee
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill("employer@infosys.com")}
-                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-colors border border-white/10"
-              >
-                Sign in as Employer
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Bottom footer text */}
@@ -127,7 +92,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="mb-5 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700">
+            <div className="mb-5 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
               {error}
             </div>
           )}

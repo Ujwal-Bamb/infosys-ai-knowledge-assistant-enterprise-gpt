@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Lock, Mail, User, ArrowRight, ShieldCheck } from "lucide-react";
+import { Lock, Mail, User, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 
@@ -15,10 +15,12 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
 
     if (password.length < 8) {
       setError("Password must be at least 8 characters long.");
@@ -29,7 +31,10 @@ export default function RegisterPage() {
 
     try {
       await register(fullName, email, password);
-      router.push("/");
+      setSuccess("Employee account created successfully! Redirecting to sign in...");
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
     } catch (err: any) {
       setError(err?.message || "Failed to create account. Please try again.");
     } finally {
@@ -87,8 +92,15 @@ export default function RegisterPage() {
           </div>
 
           {error && (
-            <div className="mb-5 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700">
+            <div className="mb-5 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-5 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 font-medium flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
+              <span>{success}</span>
             </div>
           )}
 
@@ -121,7 +133,7 @@ export default function RegisterPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="john.doe@infosys.com"
+                  placeholder="name@infosys.com"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1E60FF] focus:bg-white transition-all"
                 />
               </div>
@@ -148,7 +160,7 @@ export default function RegisterPage() {
               type="submit"
               size="lg"
               className="w-full bg-[#1E60FF] hover:bg-[#1551E5] text-white shadow-sm font-semibold mt-2"
-              disabled={loading}
+              disabled={loading || !!success}
             >
               {loading ? "Creating account..." : "Complete Registration"}
               {!loading && <ArrowRight className="w-4 h-4 ml-1" />}

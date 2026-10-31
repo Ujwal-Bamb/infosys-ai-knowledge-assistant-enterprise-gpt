@@ -45,6 +45,12 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     role = relationship("Role", back_populates="users")
+    queries = relationship(
+        "QueryHistory",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
 
 
 class Document(Base):
@@ -106,3 +112,23 @@ class AuditLog(Base):
     resource_id = Column(String(100))
     details = Column(Text)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+
+class QueryHistory(Base):
+    __tablename__ = "query_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    question = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)
+    department = Column(String(150), nullable=True)
+    sources_json = Column(Text, nullable=True)
+    has_sufficient_evidence = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+    user = relationship("User", back_populates="queries")

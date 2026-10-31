@@ -3,7 +3,7 @@ from sqlalchemy import select
 from backend.database.connection import SessionLocal
 from backend.database.models import Role
 
-DEFAULT_ROLES = ["Admin", "Employee", "Employer"]
+DEFAULT_ROLES = ["Admin", "Employee"]
 
 
 def seed_roles() -> None:
